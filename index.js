@@ -34,14 +34,30 @@ async function run() {
     const userCollections = client.db("tastyTwistOnline").collection("users");
     const cartCollections = client.db("tastyTwistOnline").collection("carts");
 
-    // save user info in database
+    // save user $ modify user role
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
+      console.log(email);
       const user = req.body;
       const query = { email: email };
       const options = { upsert: true };
       const isExist = await userCollections.findOne(query);
-      if (isExist) return res.send(isExist);
+      console.log("User found?----->", isExist);
+
+      if (isExist) {
+        if (user?.status === "Requested") {
+          const result = await userCollections.updateOne(
+            query,
+            {
+              $set: { status: user.status },
+            },
+            options
+          );
+          return res.send(result);
+        } else {
+          return res.send(isExist);
+        }
+      }
       const result = await userCollections.updateOne(
         query,
         {
@@ -80,6 +96,13 @@ async function run() {
     app.post("/carts", async (req, res) => {
       const orderData = req.body;
       const result = await cartCollections.insertOne(orderData);
+      res.send(result);
+    });
+
+    // get cartItems
+    app.get("/orders/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await cartCollections.find({ email: email }).toArray();
       res.send(result);
     });
 
