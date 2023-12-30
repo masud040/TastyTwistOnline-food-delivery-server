@@ -121,6 +121,14 @@ async function run() {
       res.send(result);
     });
 
+    //delete menu item
+    app.delete("/menu/:id", async (req, res) => {
+      const query = { _id: new ObjectId(req.params?.id) };
+      // console.log(query);
+      const result = await menuCollections.deleteOne(query);
+      res.send(result);
+    });
+
     // cart related
     app.post("/carts", async (req, res) => {
       const orderData = req.body;
