@@ -100,6 +100,13 @@ async function run() {
       res.send(result);
     });
 
+    // add menu
+    app.post("/menu", async (req, res) => {
+      const menu = req.body;
+      const result = await menuCollections.insertOne(menu);
+      res.send(result);
+    });
+
     // cart related
     app.post("/carts", async (req, res) => {
       const orderData = req.body;
