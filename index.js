@@ -34,6 +34,14 @@ async function run() {
     const userCollections = client.db("tastyTwistOnline").collection("users");
     const cartCollections = client.db("tastyTwistOnline").collection("carts");
 
+    // check user role
+    app.get("/users/:email", async (req, res) => {
+      const query = { email: req.params?.email };
+      const user = await userCollections.findOne(query);
+      const result = { role: user?.role };
+      res.send(result);
+    });
+
     // save user $ modify user role
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
