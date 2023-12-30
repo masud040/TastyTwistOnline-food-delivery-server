@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xlqw0ck.mongodb.net/?retryWrites=true&w=majority`;
 
 const app = express();
@@ -89,10 +89,10 @@ async function run() {
 
     // get all menu items
     app.get("/menu/:email", async (req, res) => {
-      const category = req.query.category;
+      const category = req.query?.category;
 
       let query = { email: req.params.email };
-      if (category !== "popular") {
+      if (category && category !== "popular") {
         query.category = category;
       }
 
@@ -104,6 +104,20 @@ async function run() {
     app.post("/menu", async (req, res) => {
       const menu = req.body;
       const result = await menuCollections.insertOne(menu);
+      res.send(result);
+    });
+
+    // edit menu item
+    app.patch("/menu/edit/:id", async (req, res) => {
+      const menu = req.body;
+      const query = { _id: new ObjectId(req.params?.id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          ...menu,
+        },
+      };
+      const result = await menuCollections.updateOne(query, updateDoc, options);
       res.send(result);
     });
 
