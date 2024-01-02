@@ -124,7 +124,6 @@ async function run() {
     //delete menu item
     app.delete("/menu/:id", async (req, res) => {
       const query = { _id: new ObjectId(req.params?.id) };
-      // console.log(query);
       const result = await menuCollections.deleteOne(query);
       res.send(result);
     });
@@ -140,6 +139,18 @@ async function run() {
     app.get("/orders/:email", async (req, res) => {
       const email = req.params.email;
       const result = await cartCollections.find({ email: email }).toArray();
+      res.send(result);
+    });
+    app.patch("/orders/:id", async (req, res) => {
+      const data = req.body;
+      const query = { _id: new ObjectId(req.params.id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          count: data.itemCount,
+        },
+      };
+      const result = await cartCollections.updateOne(query, updateDoc, options);
       res.send(result);
     });
 
