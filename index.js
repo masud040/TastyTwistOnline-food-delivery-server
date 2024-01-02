@@ -160,7 +160,7 @@ async function run() {
     });
 
     // address
-    app.get("address/:email", async (req, res) => {
+    app.get("/address/:email", async (req, res) => {
       const query = { email: req.params.email };
       const result = await addressCollections.findOne(query);
       res.send(result);
@@ -170,6 +170,12 @@ async function run() {
       const address = req.body;
       const result = await addressCollections.insertOne(address);
       res.send(result);
+    });
+    app.put("/address/:email", async (req, res) => {
+      const email = req.params.email;
+      const address = req.body;
+      console.log(address);
+      res.send(address);
     });
 
     // get all review
