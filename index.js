@@ -172,10 +172,10 @@ async function run() {
       res.send(result);
     });
     app.put("/address/:email", async (req, res) => {
-      const email = req.params.email;
+      const query = { email: req.params.email };
       const address = req.body;
-      console.log(address);
-      res.send(address);
+      const result = await addressCollections.replaceOne(query, address);
+      res.send(result);
     });
 
     // get all review
