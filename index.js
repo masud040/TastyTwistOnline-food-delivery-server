@@ -78,6 +78,7 @@ async function run() {
       );
       res.send(result);
     });
+
     // restaurants
     app.get("/restaurants", async (req, res) => {
       const restaurantEmail = req.query.email;
@@ -158,7 +159,13 @@ async function run() {
       res.send(result);
     });
 
-    // add address
+    // address
+    app.get("address/:email", async (req, res) => {
+      const query = { email: req.params.email };
+      const result = await addressCollections.findOne(query);
+      res.send(result);
+    });
+
     app.post("/address", async (req, res) => {
       const address = req.body;
       const result = await addressCollections.insertOne(address);
