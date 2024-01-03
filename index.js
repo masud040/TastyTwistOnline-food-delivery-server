@@ -133,6 +133,13 @@ async function run() {
     });
 
     // cart related
+    app.get("/orders/:ids", async (req, res) => {
+      const ids = req.params.ids;
+      const idArray = ids?.split(",");
+      const query = { _id: { $in: idArray.map((id) => new ObjectId(id)) } };
+      const result = await cartCollections.find(query).toArray();
+      res.send(result);
+    });
     app.post("/carts", async (req, res) => {
       const orderData = req.body;
       const result = await cartCollections.insertOne(orderData);
@@ -140,13 +147,13 @@ async function run() {
     });
 
     // get cartItems
-    app.get("/orders/:email", async (req, res) => {
+    app.get("/carts/:email", async (req, res) => {
       const email = req.params.email;
       const result = await cartCollections.find({ email: email }).toArray();
       res.send(result);
     });
     // update cart count
-    app.patch("/orders/:id", async (req, res) => {
+    app.patch("/carts/:id", async (req, res) => {
       const data = req.body;
       const query = { _id: new ObjectId(req.params.id) };
       const options = { upsert: true };
