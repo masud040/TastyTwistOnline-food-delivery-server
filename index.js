@@ -37,6 +37,7 @@ async function run() {
     const addressCollections = client
       .db("tastyTwistOnline")
       .collection("users-address");
+    const orderCollections = client.db("tastyTwistOnline").collection("orders");
 
     // check user role
     app.get("/users/:email", async (req, res) => {
@@ -134,7 +135,7 @@ async function run() {
     });
 
     // cart related
-    app.get("/orders/:ids", async (req, res) => {
+    app.get("/select-carts/:ids", async (req, res) => {
       const ids = req.params.ids;
       const idArray = ids?.split(",");
       const query = { _id: { $in: idArray.map((id) => new ObjectId(id)) } };
@@ -167,6 +168,12 @@ async function run() {
       res.send(result);
     });
 
+    // set order
+    app.post("/orders", async (req, res) => {
+      const order = req.body;
+      const result = await orderCollections.insertOne(order);
+      res.send(result);
+    });
     // address
     app.get("/address/:email", async (req, res) => {
       const query = { email: req.params.email };
