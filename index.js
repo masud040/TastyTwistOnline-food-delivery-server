@@ -185,7 +185,25 @@ async function run() {
       const result = await addressCollections.replaceOne(query, address);
       res.send(result);
     });
+    // update user email
+    app.patch("/email/:email", async (req, res) => {
+      const newEmail = req.query.email;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          newEmail,
+        },
+      };
+      const result = await addressCollections.updateOne(
+        {
+          email: req.params.email,
+        },
+        updateDoc,
+        options
+      );
 
+      res.send(result);
+    });
     // get all review
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollections.find().toArray();
