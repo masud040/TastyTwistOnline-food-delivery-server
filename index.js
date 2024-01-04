@@ -167,10 +167,33 @@ async function run() {
       const result = await cartCollections.updateOne(query, updateDoc, options);
       res.send(result);
     });
-
+    // get order item
+    app.get("/orders/:email", async (req, res) => {
+      const query = { email: req.params.email };
+      const options = {
+        projection: {
+          _id: 1,
+          transactionId: 1,
+          total: 1,
+          status: 1,
+          menuId: 1,
+          date: 1,
+          estimatedDate: 1,
+          "cartItems.count": 1,
+          "cartItems.image": 1,
+          "cartItems.name": 1,
+          "cartItems.price": 1,
+        },
+      };
+      const result = await orderCollections.find(query, options).toArray();
+      res.send(result);
+    });
     // set order
     app.post("/orders", async (req, res) => {
       const order = req.body;
+      const cartItemsId = order.cartId;
+      const query = { _id: { $in: cartItemsId.map((id) => new ObjectId(id)) } };
+      await cartCollections.deleteMany(query);
       const result = await orderCollections.insertOne(order);
       res.send(result);
     });
