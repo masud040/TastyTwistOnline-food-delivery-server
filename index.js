@@ -34,6 +34,9 @@ async function run() {
     const faqCollections = client.db("tastyTwistOnline").collection("faqs");
     const userCollections = client.db("tastyTwistOnline").collection("users");
     const cartCollections = client.db("tastyTwistOnline").collection("carts");
+    const favoriteCollections = client
+      .db("tastyTwistOnline")
+      .collection("favorites");
     const addressCollections = client
       .db("tastyTwistOnline")
       .collection("users-address");
@@ -144,8 +147,14 @@ async function run() {
     });
     app.post("/carts", async (req, res) => {
       const orderData = req.body;
-      const result = await cartCollections.insertOne(orderData);
-      res.send(result);
+      const place = req.query.place;
+      if (place === "cart") {
+        const result = await cartCollections.insertOne(orderData);
+        res.send(result);
+      } else {
+        const result = await favoriteCollections.insertOne(orderData);
+        res.send(result);
+      }
     });
 
     // get cartItems
@@ -175,6 +184,7 @@ async function run() {
           _id: 1,
           transactionId: 1,
           total: 1,
+          orderId: 1,
           status: 1,
           menuId: 1,
           date: 1,
