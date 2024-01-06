@@ -145,10 +145,11 @@ async function run() {
       const result = await cartCollections.find(query).toArray();
       res.send(result);
     });
-    app.post("/carts", async (req, res) => {
+    // post conditionally in cart and favorites
+    app.post("/carts-favorite", async (req, res) => {
       const orderData = req.body;
-      const place = req.query.place;
-      if (place === "cart") {
+      const items = req.query?.items;
+      if (items === "carts") {
         const result = await cartCollections.insertOne(orderData);
         res.send(result);
       } else {
@@ -158,10 +159,18 @@ async function run() {
     });
 
     // get cartItems
-    app.get("/carts/:email", async (req, res) => {
+    app.get("/carts-favorite/:email", async (req, res) => {
+      const items = req.query?.items;
       const email = req.params.email;
-      const result = await cartCollections.find({ email: email }).toArray();
-      res.send(result);
+      if (items === "carts") {
+        const result = await cartCollections.find({ email: email }).toArray();
+        res.send(result);
+      } else {
+        const result = await favoriteCollections
+          .find({ email: email })
+          .toArray();
+        res.send(result);
+      }
     });
     // update cart count
     app.patch("/carts/:id", async (req, res) => {
@@ -175,6 +184,19 @@ async function run() {
       };
       const result = await cartCollections.updateOne(query, updateDoc, options);
       res.send(result);
+    });
+
+    // delete cart and favorites items
+    app.delete("/carts-favorite/:id", async (req, res) => {
+      const items = req.query?.items;
+      const query = { _id: new ObjectId(req.params.id) };
+      if (items === "favorite") {
+        const result = await favoriteCollections.deleteOne(query);
+        res.send(result);
+      } else {
+        const result = await cartCollections.deleteOne(query);
+        res.send(result);
+      }
     });
     // get order item
     app.get("/orders/:email", async (req, res) => {
