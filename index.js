@@ -86,7 +86,7 @@ async function run() {
 
     // restaurants
     app.get("/restaurants", async (req, res) => {
-      const restaurantEmail = req.query.email;
+      const restaurantEmail = req.query?.email;
       const query = { email: restaurantEmail };
       if (restaurantEmail) {
         const result = await restaurantCollections.findOne(query);
@@ -184,6 +184,21 @@ async function run() {
       };
       const result = await cartCollections.updateOne(query, updateDoc, options);
       res.send(result);
+    });
+
+    app.post("/move-carts-favorite/:id", async (req, res) => {
+      const item = req.query?.item;
+      const query = { _id: new ObjectId(req.params.id) };
+      const order = req.body;
+      if (item === "favorite") {
+        await favoriteCollections.deleteOne(query);
+        const result = await cartCollections.insertOne(order);
+        res.send(result);
+      } else {
+        await cartCollections.deleteOne(query);
+        const result = await favoriteCollections.insertOne(order);
+        res.send(result);
+      }
     });
 
     // delete cart and favorites items
