@@ -191,11 +191,11 @@ async function run() {
       const query = { _id: new ObjectId(req.params.id) };
       const order = req.body;
       if (item === "favorite") {
-        await favoriteCollections.deleteOne(query);
+        const deleteResult = await favoriteCollections.deleteOne(query);
         const result = await cartCollections.insertOne(order);
         res.send(result);
       } else {
-        await cartCollections.deleteOne(query);
+        const deleteResult = await cartCollections.deleteOne(query);
         const result = await favoriteCollections.insertOne(order);
         res.send(result);
       }
@@ -215,7 +215,14 @@ async function run() {
     });
     // get order item
     app.get("/orders/:email", async (req, res) => {
-      const query = { email: req.params.email };
+      const person = req.query.person;
+      let query = {};
+      if (person === "seller") {
+        query.sellerEmail = req.params.email;
+      } else {
+        query.email = req.params.email;
+      }
+
       const options = {
         projection: {
           _id: 1,
@@ -279,6 +286,33 @@ async function run() {
         options
       );
 
+      res.send(result);
+    });
+
+    // handle order
+    app.patch("/orders/:id", async (req, res) => {
+      const query = { _id: new ObjectId(req.params.id) };
+      const currrentStatus = req.query.status;
+      const options = { upsert: true };
+      let status = "";
+      if (currrentStatus === "processing") {
+        status = "shipped";
+      }
+      if (currrentStatus === "shipped") {
+        status = "delivered";
+      } else {
+        status = "cancel";
+      }
+      const updateDoc = {
+        $set: {
+          status,
+        },
+      };
+      const result = await orderCollections.updateOne(
+        query,
+        updateDoc,
+        options
+      );
       res.send(result);
     });
     // get all review
