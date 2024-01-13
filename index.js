@@ -234,6 +234,7 @@ async function run() {
           date: 1,
           estimatedDate: 1,
           "cartItems.count": 1,
+          "cartItems._id": 1,
           "cartItems.image": 1,
           "cartItems.name": 1,
           "cartItems.price": 1,
@@ -300,8 +301,6 @@ async function run() {
       }
       if (currrentStatus === "shipped") {
         status = "delivered";
-      } else {
-        status = "cancel";
       }
       const updateDoc = {
         $set: {
