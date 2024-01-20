@@ -41,6 +41,9 @@ async function run() {
       .db("tastyTwistOnline")
       .collection("users-address");
     const orderCollections = client.db("tastyTwistOnline").collection("orders");
+    const couponsCollections = client
+      .db("tastyTwistOnline")
+      .collection("coupons");
 
     // check user role
     app.get("/users/:email", async (req, res) => {
@@ -302,6 +305,9 @@ async function run() {
       if (currrentStatus === "shipped") {
         status = "delivered";
       }
+      if (currrentStatus === "cancelled") {
+        status = "cancelled";
+      }
       const updateDoc = {
         $set: {
           status,
@@ -338,6 +344,16 @@ async function run() {
       res.send({
         clientSecret: paymentIntent.client_secret,
       });
+    });
+
+    // handle coupon
+    app.get("/coupons/:email", async (req, res) => {
+      const result = await couponsCollections
+        .find({
+          sellerEmail: req.params.email,
+        })
+        .toArray();
+      res.send(result);
     });
 
     await client.db("admin").command({ ping: 1 });
