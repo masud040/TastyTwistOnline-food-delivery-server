@@ -356,6 +356,24 @@ async function run() {
       res.send(result);
     });
 
+    //edit coupon
+    app.patch("/coupons/:id", async (req, res) => {
+      const filter = { _id: new ObjectId(req.params?.id) };
+      const coupon = req.body;
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          ...coupon,
+        },
+      };
+      const result = await couponsCollections.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
