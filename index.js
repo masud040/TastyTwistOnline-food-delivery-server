@@ -1,14 +1,22 @@
 const express = require("express");
 const cors = require("cors");
+var cookieParser = require("cookie-parser");
 require("dotenv").config();
 const stripe = require("stripe")(process.env.stripe_secret_key);
+const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xlqw0ck.mongodb.net/?retryWrites=true&w=majority`;
-
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
+app.use(cookieParser());
+
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -16,34 +24,66 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+// db collections
+const restaurantCollections = client
+  .db("tastyTwistOnline")
+  .collection("restaurants");
+const menuCollections = client.db("tastyTwistOnline").collection("foodMenu");
+const reviewCollections = client.db("tastyTwistOnline").collection("reviews");
+const faqCollections = client.db("tastyTwistOnline").collection("faqs");
+const userCollections = client.db("tastyTwistOnline").collection("users");
+const cartCollections = client.db("tastyTwistOnline").collection("carts");
+const favoriteCollections = client
+  .db("tastyTwistOnline")
+  .collection("favorites");
+const addressCollections = client
+  .db("tastyTwistOnline")
+  .collection("users-address");
+const orderCollections = client.db("tastyTwistOnline").collection("orders");
+const couponsCollections = client.db("tastyTwistOnline").collection("coupons");
+const verifyToken = async (req, res, next) => {
+  const token = req.cookies?.token;
+  if (!token) {
+    return res.status(401).send({ message: "Unauthorized access" });
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN, (err, decode) => {
+    if (err) {
+      return res.status(401).send({ message: "Unauthorized access" });
+    }
+    req.user = decoded;
 
+    next();
+  });
+};
 async function run() {
   try {
     await client.connect();
 
-    // db collections
-    const restaurantCollections = client
-      .db("tastyTwistOnline")
-      .collection("restaurants");
-    const menuCollections = client
-      .db("tastyTwistOnline")
-      .collection("foodMenu");
-    const reviewCollections = client
-      .db("tastyTwistOnline")
-      .collection("reviews");
-    const faqCollections = client.db("tastyTwistOnline").collection("faqs");
-    const userCollections = client.db("tastyTwistOnline").collection("users");
-    const cartCollections = client.db("tastyTwistOnline").collection("carts");
-    const favoriteCollections = client
-      .db("tastyTwistOnline")
-      .collection("favorites");
-    const addressCollections = client
-      .db("tastyTwistOnline")
-      .collection("users-address");
-    const orderCollections = client.db("tastyTwistOnline").collection("orders");
-    const couponsCollections = client
-      .db("tastyTwistOnline")
-      .collection("coupons");
+    // JWT related api
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
+        expiresIn: "1hr",
+      });
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          sameSite: "none",
+          secure: false,
+        })
+        .send({ success: true });
+    });
+
+    app.post("/logout", async (req, res) => {
+      res
+        .clearCookie("token", {
+          maxAge: 0,
+          secure: process.env.NODE_ENV === "production" ? true : false,
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
+    });
 
     // check user role
     app.get("/users/:email", async (req, res) => {
@@ -91,6 +131,7 @@ async function run() {
     app.get("/restaurants", async (req, res) => {
       const restaurantEmail = req.query?.email;
       const query = { email: restaurantEmail };
+
       if (restaurantEmail) {
         const result = await restaurantCollections.findOne(query);
         return res.send(result);
@@ -100,7 +141,7 @@ async function run() {
     });
 
     // get all menu items
-    app.get("/menu/:email", async (req, res) => {
+    app.get("/menu/:email", verifyToken, async (req, res) => {
       const category = req.query?.category;
 
       let query = { email: req.params.email };
@@ -113,14 +154,14 @@ async function run() {
     });
 
     // add menu
-    app.post("/menu", async (req, res) => {
+    app.post("/menu", verifyToken, async (req, res) => {
       const menu = req.body;
       const result = await menuCollections.insertOne(menu);
       res.send(result);
     });
 
     // edit menu item
-    app.patch("/menu/edit/:id", async (req, res) => {
+    app.patch("/menu/edit/:id", verifyToken, async (req, res) => {
       const menu = req.body;
       const query = { _id: new ObjectId(req.params?.id) };
       const options = { upsert: true };
@@ -229,6 +270,7 @@ async function run() {
       const options = {
         projection: {
           _id: 1,
+          email: 1,
           transactionId: 1,
           total: 1,
           orderId: 1,
