@@ -62,7 +62,6 @@ async function run() {
     // JWT related api
     app.post("/jwt", async (req, res) => {
       const user = req.body;
-
       const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
         expiresIn: "1hr",
       });
@@ -70,19 +69,13 @@ async function run() {
         .cookie("token", token, {
           httpOnly: true,
           sameSite: "none",
-          secure: false,
+          secure: true,
         })
         .send({ success: true });
     });
 
     app.post("/logout", async (req, res) => {
-      res
-        .clearCookie("token", {
-          maxAge: 0,
-          secure: process.env.NODE_ENV === "production" ? true : false,
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-        })
-        .send({ success: true });
+      await res.clearCookie("token", { maxAge: 0 }).send({ success: true });
     });
 
     // check user role
@@ -154,14 +147,14 @@ async function run() {
     });
 
     // add menu
-    app.post("/menu", verifyToken, async (req, res) => {
+    app.post("/menu", async (req, res) => {
       const menu = req.body;
       const result = await menuCollections.insertOne(menu);
       res.send(result);
     });
 
     // edit menu item
-    app.patch("/menu/edit/:id", verifyToken, async (req, res) => {
+    app.patch("/menu/edit/:id", async (req, res) => {
       const menu = req.body;
       const query = { _id: new ObjectId(req.params?.id) };
       const options = { upsert: true };
