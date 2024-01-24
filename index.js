@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173", "http://localhost:5174"],
     credentials: true,
   })
 );
@@ -88,7 +88,7 @@ async function run() {
     app.get("/users/:email", async (req, res) => {
       const query = { email: req.params?.email };
       const user = await userCollections.findOne(query);
-      const result = { role: user?.role };
+      const result = { role: user?.role, status: user?.status };
       res.send(result);
     });
 
@@ -140,7 +140,7 @@ async function run() {
     });
 
     // get all menu items
-    app.get("/menu/:email", verifyToken, async (req, res) => {
+    app.get("/menu/:email", async (req, res) => {
       const category = req.query?.category;
 
       let query = { email: req.params.email };
@@ -308,6 +308,7 @@ async function run() {
       const result = await addressCollections.insertOne(address);
       res.send(result);
     });
+
     app.put("/address/:email", async (req, res) => {
       const query = { email: req.params.email };
       const address = req.body;
@@ -388,12 +389,8 @@ async function run() {
     });
 
     // handle coupon
-    app.get("/coupons/:email", async (req, res) => {
-      const result = await couponsCollections
-        .find({
-          sellerEmail: req.params.email,
-        })
-        .toArray();
+    app.get("/coupons", async (req, res) => {
+      const result = await couponsCollections.findOne();
       res.send(result);
     });
 
@@ -412,6 +409,11 @@ async function run() {
         updatedDoc,
         options
       );
+      res.send(result);
+    });
+    app.post("/coupons", async (req, res) => {
+      const coupon = req.body;
+      const result = await couponsCollections.insertOne(coupon);
       res.send(result);
     });
 
