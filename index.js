@@ -139,6 +139,14 @@ async function run() {
       res.send(result);
     });
 
+    // add restaurant
+    app.post("/restaurants", async (req, res) => {
+      const restaurantData = req.body;
+
+      const result = await restaurantCollections.insertOne(restaurantData);
+      res.send(result);
+    });
+
     // get all menu items
     app.get("/menu/:email", async (req, res) => {
       const category = req.query?.category;
