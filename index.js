@@ -481,7 +481,9 @@ async function run() {
         { $unset: { ["status"]: 1 } }
       );
       const result = await restaurantCollections.insertOne(restaurant);
-
+      await requestRestaurantCollections.deleteOne({
+        email: req.params?.email,
+      });
       res.send(result);
     });
 
