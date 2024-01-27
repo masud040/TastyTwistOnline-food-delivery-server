@@ -145,11 +145,22 @@ async function run() {
     // add restaurant
     app.post("/restaurants", async (req, res) => {
       const restaurantData = req.body;
-      console.log(restaurantData);
-      res.send(restaurantData);
+      const query = { email: req.query?.email };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          status: "Pending",
+        },
+      };
       const result = await requestRestaurantCollections.insertOne(
         restaurantData
       );
+      const result1 = await userCollections.updateOne(
+        query,
+        updatedDoc,
+        options
+      );
+      console.log(result1);
       res.send(result);
     });
 
@@ -433,7 +444,7 @@ async function run() {
 
     // handle user
     app.get("/seller-request", async (req, res) => {
-      const query = { status: { $in: ["Requested", "Approved"] } };
+      const query = { status: { $in: ["Requested", "Pending"] } };
       const result = await userCollections.find(query).toArray();
       res.send(result);
     });
