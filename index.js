@@ -160,7 +160,6 @@ async function run() {
         updatedDoc,
         options
       );
-      console.log(result1);
       res.send(result);
     });
 
@@ -463,6 +462,15 @@ async function run() {
         updatedDoc,
         options
       );
+      res.send(result);
+    });
+
+    // get request restaurant
+
+    app.get("/requested/restaurant/:email", async (req, res) => {
+      const result = await requestRestaurantCollections.findOne({
+        email: req.params?.email,
+      });
       res.send(result);
     });
 
