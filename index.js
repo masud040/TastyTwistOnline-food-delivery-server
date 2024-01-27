@@ -143,7 +143,7 @@ async function run() {
     });
 
     // add restaurant
-    app.post("/restaurants", async (req, res) => {
+    app.post("/requested/restaurants", async (req, res) => {
       const restaurantData = req.body;
       const query = { email: req.query?.email };
       const options = { upsert: true };
@@ -467,10 +467,21 @@ async function run() {
 
     // get request restaurant
 
-    app.get("/requested/restaurant/:email", async (req, res) => {
+    app.get("/requested/restaurants/:email", async (req, res) => {
       const result = await requestRestaurantCollections.findOne({
         email: req.params?.email,
       });
+      res.send(result);
+    });
+
+    app.post("/restaurants/:email", async (req, res) => {
+      const restaurant = req.body;
+      await userCollections.updateOne(
+        { email: req.params?.email },
+        { $unset: { ["status"]: 1 } }
+      );
+      const result = await restaurantCollections.insertOne(restaurant);
+
       res.send(result);
     });
 
