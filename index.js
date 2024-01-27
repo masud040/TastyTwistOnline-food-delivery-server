@@ -41,6 +41,9 @@ const addressCollections = client
   .collection("users-address");
 const orderCollections = client.db("tastyTwistOnline").collection("orders");
 const couponsCollections = client.db("tastyTwistOnline").collection("coupons");
+const requestRestaurantCollections = client
+  .db("tastyTwistOnline")
+  .collection("requestedRestaurants");
 const verifyToken = async (req, res, next) => {
   const token = req.cookies?.token;
   if (!token) {
@@ -142,8 +145,11 @@ async function run() {
     // add restaurant
     app.post("/restaurants", async (req, res) => {
       const restaurantData = req.body;
-
-      const result = await restaurantCollections.insertOne(restaurantData);
+      console.log(restaurantData);
+      res.send(restaurantData);
+      const result = await requestRestaurantCollections.insertOne(
+        restaurantData
+      );
       res.send(result);
     });
 
@@ -422,6 +428,30 @@ async function run() {
     app.post("/coupons", async (req, res) => {
       const coupon = req.body;
       const result = await couponsCollections.insertOne(coupon);
+      res.send(result);
+    });
+
+    // handle user
+    app.get("/seller-request", async (req, res) => {
+      const query = { status: { $in: ["Requested", "Approved"] } };
+      const result = await userCollections.find(query).toArray();
+      res.send(result);
+    });
+    // handle change status
+    app.patch("/user/status/:email", async (req, res) => {
+      const changeToStatus = req.query?.status;
+      const query = { email: req.params.email };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          status: changeToStatus,
+        },
+      };
+      const result = await userCollections.updateOne(
+        query,
+        updatedDoc,
+        options
+      );
       res.send(result);
     });
 
