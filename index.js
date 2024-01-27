@@ -478,12 +478,23 @@ async function run() {
       const restaurant = req.body;
       await userCollections.updateOne(
         { email: req.params?.email },
-        { $unset: { ["status"]: 1 } }
+        { $unset: { status: 1 }, $set: { role: "seller" } }
       );
       const result = await restaurantCollections.insertOne(restaurant);
       await requestRestaurantCollections.deleteOne({
         email: req.params?.email,
       });
+      res.send(result);
+    });
+
+    app.delete("/restaurants/:email", async (req, res) => {
+      const result = await requestRestaurantCollections.deleteOne({
+        email: req.params?.email,
+      });
+      await userCollections.updateOne(
+        { email: req.params?.email },
+        { $set: { status: "Canceled" } }
+      );
       res.send(result);
     });
 
