@@ -293,6 +293,7 @@ async function run() {
       const options = {
         projection: {
           _id: 1,
+
           email: 1,
           transactionId: 1,
           total: 1,
@@ -306,6 +307,8 @@ async function run() {
           "cartItems.image": 1,
           "cartItems.name": 1,
           "cartItems.price": 1,
+          "cartItems.menuId": 1,
+          "cartItems.sellerEmail": 1,
         },
       };
       const result = await orderCollections.find(query, options).toArray();
