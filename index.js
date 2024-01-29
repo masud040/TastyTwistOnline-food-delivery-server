@@ -44,6 +44,10 @@ const couponsCollections = client.db("tastyTwistOnline").collection("coupons");
 const requestRestaurantCollections = client
   .db("tastyTwistOnline")
   .collection("requestedRestaurants");
+
+const feebackCollections = client
+  .db("tastyTwistOnline")
+  .collection("foodReviews");
 const verifyToken = async (req, res, next) => {
   const token = req.cookies?.token;
   if (!token) {
@@ -293,7 +297,6 @@ async function run() {
       const options = {
         projection: {
           _id: 1,
-
           email: 1,
           transactionId: 1,
           total: 1,
@@ -498,6 +501,13 @@ async function run() {
         { email: req.params?.email },
         { $set: { status: "Canceled" } }
       );
+      res.send(result);
+    });
+
+    // add feedback
+    app.post("/feedback", async (req, res) => {
+      const feedback = req.body;
+      const result = await feebackCollections.insertOne(feedback);
       res.send(result);
     });
 
