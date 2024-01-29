@@ -505,9 +505,13 @@ async function run() {
     });
 
     // add feedback
-    app.post("/feedback", async (req, res) => {
+    app.post("/feedback/:id", async (req, res) => {
+      const id = req.params.id;
       const feedback = req.body;
       const result = await feebackCollections.insertOne(feedback);
+      await orderCollections.deleteOne({
+        _id: new ObjectId(id),
+      });
       res.send(result);
     });
 
