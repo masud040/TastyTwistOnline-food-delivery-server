@@ -509,9 +509,10 @@ async function run() {
       const id = req.params.id;
       const feedback = req.body;
       const result = await feebackCollections.insertOne(feedback);
-      await orderCollections.deleteOne({
-        _id: new ObjectId(id),
-      });
+      await orderCollections.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { status: "success" } }
+      );
       res.send(result);
     });
 
