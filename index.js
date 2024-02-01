@@ -48,6 +48,7 @@ const requestRestaurantCollections = client
 const feebackCollections = client
   .db("tastyTwistOnline")
   .collection("foodReviews");
+
 const verifyToken = async (req, res, next) => {
   const token = req.cookies?.token;
   if (!token) {
@@ -516,9 +517,20 @@ async function run() {
       res.send(result);
     });
     app.delete("/orders/:id", async (req, res) => {
-      const result = await orderCollections.deleteOne({
+      const feedback = {
+        name: req.query?.name,
+        email: req.query?.email,
+        reason: req.query?.reason,
+        image: req.query?.image,
+        menuId: req.query?.menuId,
+        cancel: true,
+      };
+
+      const result = await feebackCollections.insertOne(feedback);
+      await orderCollections.deleteOne({
         _id: new ObjectId(req.params?.id),
       });
+
       res.send(result);
     });
 
