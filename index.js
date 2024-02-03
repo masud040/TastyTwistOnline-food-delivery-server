@@ -243,8 +243,36 @@ async function run() {
       const orderData = req.body;
       const items = req.query?.items;
       if (items === "carts") {
-        const result = await cartCollections.insertOne(orderData);
-        res.send(result);
+        const matches = await cartCollections.findOne({
+          $and: [{ email: orderData.email }, { menuId: orderData.menuId }],
+        });
+        if (matches) {
+          const result = await cartCollections.findOneAndUpdate(
+            {
+              $and: [{ email: orderData.email }, { menuId: orderData.menuId }],
+            },
+            {
+              $inc: { count: 1 },
+            },
+            {
+              returnDocument: "after",
+              projection: {
+                _id: 0,
+                menuId: 0,
+                email: 0,
+                name: 0,
+                price: 0,
+                image: 0,
+                sellerEmail: 0,
+              },
+            }
+          );
+
+          res.send(result);
+        } else {
+          const result = await cartCollections.insertOne(orderData);
+          res.send(result);
+        }
       } else {
         const result = await favoriteCollections.insertOne(orderData);
         res.send(result);
