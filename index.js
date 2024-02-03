@@ -96,7 +96,11 @@ async function run() {
     app.get("/users/:email", async (req, res) => {
       const query = { email: req.params?.email };
       const user = await userCollections.findOne(query);
-      const result = { role: user?.role, status: user?.status };
+      const result = {
+        role: user?.role,
+        status: user?.status,
+        timeStamp: user?.timeStamp,
+      };
       res.send(result);
     });
 
@@ -162,6 +166,24 @@ async function run() {
       );
       const result1 = await userCollections.updateOne(
         query,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    //update restaurant
+    app.patch("/restaurants/:id", async (req, res) => {
+      const restaurantData = req.body;
+      const filter = { _id: new ObjectId(req.params?.id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          ...restaurantData,
+        },
+      };
+      const result = await restaurantCollections.updateOne(
+        filter,
         updatedDoc,
         options
       );
