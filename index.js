@@ -107,7 +107,6 @@ async function run() {
     // save user $ modify user role
     app.put("/users/:email", async (req, res) => {
       const email = req.params.email;
-      console.log(email);
       const user = req.body;
       const query = { email: email };
       const options = { upsert: true };
@@ -524,6 +523,23 @@ async function run() {
         { email: req.params?.email },
         { $set: { status: "Canceled" } }
       );
+      res.send(result);
+    });
+
+    //get feedback
+    app.get("/feedbacks", async (req, res) => {
+      let query;
+      if (req.query?.email) {
+        query = { sellerEmail: req.query?.email };
+      } else if (req.query?.id) {
+        query = { menuId: req.query?.id };
+      } else {
+        const result = await feebackCollections.find().toArray();
+        res.send(result);
+        return;
+      }
+
+      const result = await feebackCollections.find(query).toArray();
       res.send(result);
     });
 
