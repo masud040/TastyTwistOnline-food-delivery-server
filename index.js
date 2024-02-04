@@ -583,7 +583,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/seller/states/:email", async (req, res) => {
+    app.get("/seller/stats/:email", async (req, res) => {
       const totalOrder = await orderCollections.countDocuments({
         $and: [{ sellerEmail: req.params.email }, { status: "delivered" }],
       });
@@ -616,15 +616,87 @@ async function run() {
           },
         ])
         .toArray();
-      const revenue = result?.length > 0 ? result[0].totalRevenue : 0;
+      const totalRevenue = result?.length > 0 ? result[0].totalRevenue : 0;
       res.send({
-        revenue,
+        totalRevenue,
         totalOrder,
         cancelOrder,
         totalItem,
         totalFeedback,
         totalUser,
       });
+    });
+
+    //using aggregate pipeline
+    app.get("/order-stats/:email", async (req, res) => {
+      const sellerEmail = req.params?.email;
+      try {
+        const result = await orderCollections
+          .aggregate([
+            {
+              $match: {
+                sellerEmail,
+                status: "delivered",
+              },
+            },
+            {
+              $unwind: "$menuId",
+            },
+            {
+              $lookup: {
+                from: "foodMenu",
+                let: { menuId: "$menuId" },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: [{ $toString: "$_id" }, "$$menuId"],
+                      },
+                    },
+                  },
+                ],
+                as: "menuItems",
+              },
+            },
+            {
+              $unwind: "$menuItems",
+            },
+            {
+              $group: {
+                _id: "$menuItems.category",
+                quantity: {
+                  $sum: 1,
+                },
+                revenue: { $sum: "$menuItems.price" },
+              },
+            },
+          ])
+          .toArray();
+        res.send(result);
+      } catch (error) {
+        console.log(error.message);
+      }
+      // const result = await orderCollections
+      //   .aggregate([
+      //     {
+      //       $match: {
+      //         sellerEmail: req.params?.email,
+      //         status: "delivered",
+      //       },
+      //     },
+      //     {
+      //       $unwind: "$menuId",
+      //     },
+      //     {
+      //       $lookup: {
+      //         from: "foodMenu",
+      //         localField: "menuId",
+      //         foreignField: "_id",
+      //         as: "menuItems",
+      //       },
+      //     },
+      //   ])
+      //   .toArray();
     });
 
     await client.db("admin").command({ ping: 1 });
