@@ -247,28 +247,9 @@ async function run() {
           $and: [{ email: orderData.email }, { menuId: orderData.menuId }],
         });
         if (matches) {
-          const result = await cartCollections.findOneAndUpdate(
-            {
-              $and: [{ email: orderData.email }, { menuId: orderData.menuId }],
-            },
-            {
-              $inc: { count: 1 },
-            },
-            {
-              returnDocument: "after",
-              projection: {
-                _id: 0,
-                menuId: 0,
-                email: 0,
-                name: 0,
-                price: 0,
-                image: 0,
-                sellerEmail: 0,
-              },
-            }
-          );
-
-          res.send(result);
+          res.send({
+            message: "You have already added this item. please update quantity",
+          });
         } else {
           const result = await cartCollections.insertOne(orderData);
           res.send(result);
@@ -352,6 +333,7 @@ async function run() {
           total: 1,
           orderId: 1,
           status: 1,
+          isFeedback: 1,
           menuId: 1,
           date: 1,
           estimatedDate: 1,
@@ -575,10 +557,11 @@ async function run() {
     app.post("/feedback/:id", async (req, res) => {
       const id = req.params.id;
       const feedback = req.body;
+      const options = { upsert: true };
       const result = await feebackCollections.insertOne(feedback);
       await orderCollections.updateOne(
         { _id: new ObjectId(id) },
-        { $set: { status: "success" } }
+        { $set: { isFeedback: true } }
       );
       res.send(result);
     });
@@ -598,6 +581,31 @@ async function run() {
       });
 
       res.send(result);
+    });
+
+    app.get("/seller/states/:email", async (req, res) => {
+      const totalOrder = await orderCollections.countDocuments([]);
+
+      const result = await orderCollections
+        .aggregate([
+          {
+            $match: {
+              sellerEmail: req.params?.email,
+              status: "delivered",
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              totalRevenue: {
+                $sum: "$total",
+              },
+            },
+          },
+        ])
+        .toArray();
+      const revenue = result?.length > 0 ? result[0].totalRevenue : 0;
+      res.send({ revenue });
     });
 
     await client.db("admin").command({ ping: 1 });
