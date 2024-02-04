@@ -584,7 +584,19 @@ async function run() {
     });
 
     app.get("/seller/states/:email", async (req, res) => {
-      const totalOrder = await orderCollections.countDocuments([]);
+      const totalOrder = await orderCollections.countDocuments({
+        $and: [{ sellerEmail: req.params.email }, { status: "delivered" }],
+      });
+      const cancelOrder = await orderCollections.countDocuments({
+        $and: [{ sellerEmail: req.params.email }, { status: "cancelled" }],
+      });
+      const totalItem = await menuCollections.countDocuments({
+        email: req.params.email,
+      });
+      const totalFeedback = await feebackCollections.countDocuments({
+        sellerEmail: req.params.email,
+      });
+      const totalUser = await userCollections.estimatedDocumentCount();
 
       const result = await orderCollections
         .aggregate([
@@ -605,7 +617,14 @@ async function run() {
         ])
         .toArray();
       const revenue = result?.length > 0 ? result[0].totalRevenue : 0;
-      res.send({ revenue });
+      res.send({
+        revenue,
+        totalOrder,
+        cancelOrder,
+        totalItem,
+        totalFeedback,
+        totalUser,
+      });
     });
 
     await client.db("admin").command({ ping: 1 });
