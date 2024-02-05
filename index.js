@@ -670,6 +670,14 @@ async function run() {
                 revenue: { $sum: "$menuItems.price" },
               },
             },
+            {
+              $project: {
+                _id: 0,
+                category: "$_id",
+                quantity: "$quantity",
+                revenue: "$revenue",
+              },
+            },
           ])
           .toArray();
         res.send(result);
