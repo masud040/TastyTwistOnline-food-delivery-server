@@ -567,11 +567,11 @@ async function run() {
     });
     app.delete("/orders/:id", async (req, res) => {
       const feedback = {
-        name: req.query?.name,
-        email: req.query?.email,
+        userName: req.query?.name,
         reason: req.query?.reason,
-        image: req.query?.image,
-        menuId: req.query?.menuId,
+        photo: req.query?.image,
+        cancelMenuId: req.query?.menuId,
+        sellerEmail: req.query?.sellerEmail,
         cancel: true,
       };
 
@@ -684,27 +684,6 @@ async function run() {
       } catch (error) {
         console.log(error.message);
       }
-      // const result = await orderCollections
-      //   .aggregate([
-      //     {
-      //       $match: {
-      //         sellerEmail: req.params?.email,
-      //         status: "delivered",
-      //       },
-      //     },
-      //     {
-      //       $unwind: "$menuId",
-      //     },
-      //     {
-      //       $lookup: {
-      //         from: "foodMenu",
-      //         localField: "menuId",
-      //         foreignField: "_id",
-      //         as: "menuItems",
-      //       },
-      //     },
-      //   ])
-      //   .toArray();
     });
 
     await client.db("admin").command({ ping: 1 });
