@@ -565,6 +565,14 @@ async function run() {
       );
       res.send(result);
     });
+
+    // delete feedback
+    app.delete("/delete-feedback/:id", async (req, res) => {
+      const result = await feebackCollections.deleteOne({
+        _id: new ObjectId(req.params.id),
+      });
+      res.send(result);
+    });
     app.delete("/orders/:id", async (req, res) => {
       const feedback = {
         userName: req.query?.name,
