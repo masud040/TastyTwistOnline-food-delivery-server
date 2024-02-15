@@ -192,13 +192,19 @@ async function run() {
     // get all menu items
     app.get("/menu/:email", async (req, res) => {
       const category = req.query?.category;
+      const order = req.query?.order;
+      const minValue = req.query?.minValue;
+      const maxValue = req.query?.maxValue;
 
       let query = { email: req.params.email };
       if (category && category !== "popular") {
         query.category = category;
       }
 
-      const result = await menuCollections.find(query).toArray();
+      const result = await menuCollections
+        .find(query)
+        .sort({ price: order })
+        .toArray();
       res.send(result);
     });
 
