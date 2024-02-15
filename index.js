@@ -193,17 +193,21 @@ async function run() {
     app.get("/menu/:email", async (req, res) => {
       const category = req.query?.category;
       const order = req.query?.order;
-      const minValue = req.query?.minValue;
-      const maxValue = req.query?.maxValue;
+      const minPrice = parseFloat(req.query?.minPrice);
+      const maxPrice = parseFloat(req.query?.maxPrice);
 
       let query = { email: req.params.email };
       if (category && category !== "popular") {
         query.category = category;
       }
+      if (minPrice && maxPrice) {
+        let priceRange = { $lt: maxPrice, $gt: minPrice };
+        query.price = priceRange;
+      }
 
       const result = await menuCollections
         .find(query)
-        .sort({ price: order })
+        .sort({ price: order === "asc" ? 1 : -1 })
         .toArray();
       res.send(result);
     });
