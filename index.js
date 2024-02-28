@@ -548,19 +548,29 @@ async function run() {
 
     //get feedback
     app.get("/feedbacks", async (req, res) => {
-      let query;
-      if (req.query?.email) {
-        query = { sellerEmail: req.query?.email };
-      } else if (req.query?.id) {
-        query = { menuId: req.query?.id };
-      } else {
-        const result = await feebackCollections.find().toArray();
-        res.send(result);
-        return;
-      }
+      try {
+        const page = parseInt(req.query?.page);
+        const size = parseInt(req.query?.size);
+        let query;
+        if (req.query?.email) {
+          query = { sellerEmail: req.query?.email };
+        } else if (req.query?.id) {
+          query = { menuId: req.query?.id };
+        } else {
+          const result = await feebackCollections
+            .find()
+            .skip(page * size)
+            .limit(size)
+            .toArray();
+          res.send(result);
+          return;
+        }
 
-      const result = await feebackCollections.find(query).toArray();
-      res.send(result);
+        const result = await feebackCollections.find(query).toArray();
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+      }
     });
 
     // add feedback
