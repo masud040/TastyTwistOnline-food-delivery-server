@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: ["http://localhost:5173"],
     credentials: true,
   })
 );
@@ -65,14 +65,16 @@ const verifyToken = async (req, res, next) => {
 };
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     // JWT related api
     app.post("/jwt", async (req, res) => {
       const user = req.body;
+
       const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
         expiresIn: "1hr",
       });
+
       res
         .cookie("token", token, {
           httpOnly: true,
