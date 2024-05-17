@@ -1,4 +1,5 @@
 const express = require("express");
+const { Resend } = require("resend");
 const cors = require("cors");
 var cookieParser = require("cookie-parser");
 require("dotenv").config();
@@ -7,6 +8,7 @@ const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xlqw0ck.mongodb.net/?retryWrites=true&w=majority`;
 const app = express();
+const resend = new Resend(process.env.RESEND_API);
 const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(
@@ -717,6 +719,38 @@ async function run() {
       } catch (error) {
         console.log(error.message);
       }
+    });
+
+    //send email after order
+    app.post("/send-mail", async (req, res) => {
+      console.log(req.body);
+      const { data, error } = await resend.emails.send({
+        from: "TastyTwist Online Food <onboarding@resend.dev>",
+        to: req.body?.user?.email,
+        subject: "Order Confirmation",
+        text: "Your order has been confirmed",
+        html: `<div>
+        <p>Dear ${req?.body?.user?.displayName}</p>
+        <p>Thank you for your order!</p>
+    
+    <p>We are pleased to confirm that we have received your order #${
+      req?.body?.user?.orderId
+    } placed on ${new Date().toDateString()}. Here are the details:</p>
+    <p>Your order is now being processed, and you will receive a notification once it has been shipped. You can track your order status using the following link: <a href="${
+      req?.body?.tackingUrl
+    }">Track Order</a>.</p>
+    
+    <p>If you have any questions or need further assistance, please do not hesitate to contact our customer support team at support-tastytwist@gmail.com/01234567890.</p>
+    
+    <p>Thank you for choosing TastyTwist Online Food Service! We hope you enjoy your purchase.</p>
+    
+    <p>Best regards,</p>
+    
+    <p>TastyTwist Online Food Service<br>
+    tastytwist@gmail.com<br>
+    <a href="[Your Website URL]">[Your Website URL]</a></p>
+        </div>`,
+      });
     });
 
     await client.db("admin").command({ ping: 1 });
