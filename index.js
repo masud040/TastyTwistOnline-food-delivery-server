@@ -16,7 +16,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:5174",
-      "https://6647a20f8c65b10dda4cdbba--profound-torte-5af664.netlify.app",
+      "https://6647bf5d8c65b12b494cdf2d--profound-torte-5af664.netlify.app",
     ],
     credentials: true,
   })
@@ -725,7 +725,7 @@ async function run() {
     //send email after order
     app.post("/send-mail", async (req, res) => {
       const { data, error } = await resend.emails.send({
-        from: "TastyTwist Online Food <onboarding@resend.dev>",
+        from: "Tasty Twist <onboarding@resend.dev>",
         to: req.body?.user?.email,
         subject: "Order Confirmation",
         text: "Your order has been confirmed",
@@ -736,7 +736,7 @@ async function run() {
     <p>We are pleased to confirm that we have received your order #${
       req?.body?.user?.orderId
     } placed on ${new Date().toDateString()}. Here are the details:</p>
-    <p>Your order is now being processed, and you will receive a notification once it has been shipped. You can track your order status using the following link: <a href="${
+    <p>Your order is now being processed, and you will receive a notification once it has been shipped. You can track your order status using the following link: <a href="https://6647bf5d8c65b12b494cdf2d--profound-torte-5af664.netlify.app/${
       req?.body?.tackingUrl
     }">Track Order</a>.</p>
     
@@ -746,9 +746,9 @@ async function run() {
     
     <p>Best regards,</p>
     
-    <p>TastyTwist Online Food Service<br>
+    <p>Tasty Twist<br>
     tastytwist@gmail.com<br>
-    <a href="[Your Website URL]">[Your Website URL]</a></p>
+    <a href="https://6647bf5d8c65b12b494cdf2d--profound-torte-5af664.netlify.app">Tasty Twist</a></p>
         </div>`,
       });
     });
