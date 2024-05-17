@@ -723,7 +723,6 @@ async function run() {
 
     //send email after order
     app.post("/send-mail", async (req, res) => {
-      console.log(req.body);
       const { data, error } = await resend.emails.send({
         from: "TastyTwist Online Food <onboarding@resend.dev>",
         to: req.body?.user?.email,
