@@ -15,6 +15,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
+      "http://localhost:5174",
       "https://6647a20f8c65b10dda4cdbba--profound-torte-5af664.netlify.app",
     ],
     credentials: true,
