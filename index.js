@@ -16,7 +16,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:5174",
-      "https://6647bf5d8c65b12b494cdf2d--profound-torte-5af664.netlify.app",
+      "https://profound-torte-5af664.netlify.app",
     ],
     credentials: true,
   })
@@ -736,7 +736,7 @@ async function run() {
     <p>We are pleased to confirm that we have received your order #${
       req?.body?.user?.orderId
     } placed on ${new Date().toDateString()}. Here are the details:</p>
-    <p>Your order is now being processed, and you will receive a notification once it has been shipped. You can track your order status using the following link: <a href="https://6647bf5d8c65b12b494cdf2d--profound-torte-5af664.netlify.app/${
+    <p>Your order is now being processed, and you will receive a notification once it has been shipped. You can track your order status using the following link: <a href="https://profound-torte-5af664.netlify.app/${
       req?.body?.tackingUrl
     }">Track Order</a>.</p>
     
@@ -748,7 +748,7 @@ async function run() {
     
     <p>Tasty Twist<br>
     tastytwist@gmail.com<br>
-    <a href="https://6647bf5d8c65b12b494cdf2d--profound-torte-5af664.netlify.app">Tasty Twist</a></p>
+    <a href="https://profound-torte-5af664.netlify.app">Tasty Twist</a></p>
         </div>`,
       });
     });
